@@ -1,19 +1,27 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MyPanel extends JPanel implements MouseListener, MouseMotionListener {
+public class MyPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
     Graphics2D g2D;
     ArrayList<Metaball> mballs = new ArrayList<>();
     Metaball heldBall = null;
 
+    Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
+
     MyPanel() {
-        this.setPreferredSize(new Dimension(1000, 1000));
+        this.setPreferredSize(new Dimension(500, 500));
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
+        JButton addBall = new JButton("add Metaball");
+        JButton addNegBall = new JButton("add Negative Metaball");
+        addBall.addActionListener(this);
+        this.add(addBall);
+        addNegBall.addActionListener(this);
+        this.add(addNegBall);
 
         Metaball mball = new Metaball(100, 100, 25, Color.BLUE, "BLUE");
         mballs.add(mball);
@@ -110,7 +118,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     @Override
     public void mouseClicked(MouseEvent e) {
         System.out.println("Click: " + e.getButton());
-        if (e.getButton() == 3){
+        if (e.getButton() == 3) {
             boolean isDeleted;
             for (int i = 0; i < mballs.size(); i++) {
                 isDeleted = mballs.get(i).boundCheck(e.getX(), e.getY());
@@ -152,4 +160,32 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     public void mouseExited(MouseEvent e) {
 
     }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println(e.getActionCommand());
+        String command = e.getActionCommand();
+        if (command.equals("add Metaball")) {
+            Color color = colors[0];
+            for (int i = 0; i <= mballs.size(); i++) {
+                boolean present = false;
+                for (Metaball m : mballs) {
+                    if (m.color == colors[i]) {
+                        present = true;
+                    }
+                }
+                if (!present) {
+                    color = colors[i];
+                    break;
+                }
+
+            }
+            Metaball m = new Metaball(100, 100, 25, color, "GREEN");
+            mballs.add(m);
+            this.repaint();
+        } else if (command.equals("add Negative Metaball")) {
+
+        }
+    }
 }
+
