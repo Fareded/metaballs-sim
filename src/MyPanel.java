@@ -26,12 +26,17 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         this.setPreferredSize(new Dimension(500, 500));
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
-        JButton addBall = new JButton("add Metaball");
-        JButton addNegBall = new JButton("add Negative Metaball");
+
+        JButton addBall = new JButton("+ Metaball");
+        JButton addNegBall = new JButton("+ Negative Metaball");
         addBall.addActionListener(this);
         this.add(addBall);
         addNegBall.addActionListener(this);
         this.add(addNegBall);
+
+        JButton clearScreen = new JButton("Clear Screen");
+        clearScreen.addActionListener(this);
+        this.add(clearScreen);
 
         JSpinner radiusSpinner = new JSpinner(radiusValue);
         radiusSpinner.setMinimumSize(new Dimension(50, 50));
@@ -198,7 +203,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         System.out.println(e.getActionCommand());
         String command = e.getActionCommand();
 
-        if (command.equals("add Metaball")) {
+        if (command.equals("+ Metaball")) {
             Color color = colors[0];
             for (int i = 0; i <= mballs.size(); i++) {
                 boolean present = false;
@@ -218,11 +223,16 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
             Metaball m = new Metaball(100, 100, r, s, color, "GREEN", false);
             mballs.add(m);
             this.repaint();
-        } else if (command.equals("add Negative Metaball")) {
+        } else if (command.equals("+ Negative Metaball")) {
             int r = (int) radiusValue.getValue();
             int s = (int) strengthValue.getValue();
             Metaball m = new Metaball(150, 150, r, s, Color.BLACK, "BLACK(-)", true);
             mballs.add(m);
+            this.repaint();
+        } else if (command.equals("Clear Screen")) {
+            while (mballs.size() != 0) {
+                mballs.remove(mballs.get(0));
+            }
             this.repaint();
         }
     }
