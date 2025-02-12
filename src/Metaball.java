@@ -4,7 +4,7 @@ public class Metaball {
     double x;
     double y;
     double r;
-    double trueR;
+    double falseR;
     Color color;
 
     String name;
@@ -14,8 +14,8 @@ public class Metaball {
 
         this.x = x;
         this.y = y;
-        this.trueR = r;
-        this.r = trueR/4;
+        this.r = r;
+        this.falseR = r*4;
         this.color = color;
         this.name = name;
     }

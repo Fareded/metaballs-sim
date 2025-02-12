@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.event.*;
 
 public class MyFrame extends JFrame {
     MyPanel panel;
@@ -11,20 +10,5 @@ public class MyFrame extends JFrame {
         this.pack();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-
-//        panel.addMouseMotionListener(this);
     }
-
-
-//    @Override
-//    public void mouseDragged(MouseEvent e) {
-//        System.out.println("Dragged");
-//        System.out.println("X:" + e.getX() + " Y:" + e.getY());
-//        System.out.println(e);
-//    }
-//
-//    @Override
-//    public void mouseMoved(MouseEvent e) {
-//        System.out.println("moved");
-//    }
 }

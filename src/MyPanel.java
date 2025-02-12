@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -8,7 +7,7 @@ import java.util.ArrayList;
 
 public class MyPanel extends JPanel implements MouseListener, MouseMotionListener {
     Graphics2D g2D;
-    ArrayList<Metaball> mballs = new ArrayList<Metaball>();
+    ArrayList<Metaball> mballs = new ArrayList<>();
     Metaball heldBall = null;
 
     MyPanel() {
@@ -16,13 +15,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
 
-        Metaball mball = new Metaball(100, 100, 100, Color.BLUE, "BLUE");
+        Metaball mball = new Metaball(100, 100, 25, Color.BLUE, "BLUE");
         mballs.add(mball);
-        Metaball mball2 = new Metaball(500, 100, 100, Color.RED, "RED");
+        Metaball mball2 = new Metaball(500, 100, 25, Color.RED, "RED");
         mballs.add(mball2);
-        Metaball mball3 = new Metaball(100, 500, 100, Color.GREEN, "GREEN");
+        Metaball mball3 = new Metaball(100, 500, 25, Color.GREEN, "GREEN");
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(500, 500, 100, Color.YELLOW, "YELLOW");
+        Metaball mball4 = new Metaball(500, 500, 25, Color.YELLOW, "YELLOW");
         mballs.add(mball4);
     }
 
@@ -43,8 +42,8 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         g2D.setColor(m.color);
 
         double distort = metaDistortion(m, m.x, m.y);
-        for (double x = m.x - m.trueR; x <= m.x + m.trueR + distort; x++) {
-            for (double y = m.y - m.trueR; y <= m.y + m.trueR + distort; y++) {
+        for (double x = m.x - m.falseR; x <= m.x + m.falseR + distort; x++) {
+            for (double y = m.y - m.falseR; y <= m.y + m.falseR + distort; y++) {
                 distort = metaDistortion(m, x, y);
                 double radius = m.r + distort;
                 double r_sqrd = Math.pow(radius, 2);
@@ -91,7 +90,6 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 distortion = distortion + (1000 * (1 / dist));
             }
         }
-
         return distortion;
     }
 
@@ -111,19 +109,31 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     @Override
     public void mouseClicked(MouseEvent e) {
-
+        System.out.println("Click: " + e.getButton());
+        if (e.getButton() == 3){
+            boolean isDeleted;
+            for (int i = 0; i < mballs.size(); i++) {
+                isDeleted = mballs.get(i).boundCheck(e.getX(), e.getY());
+//
+                if (isDeleted) {
+                    mballs.remove(i);
+                    this.repaint();
+                    break;
+                }
+            }
+        }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         boolean isHeld;
 
-        for (int i = 0; i < mballs.size(); i++) {
-            isHeld = mballs.get(i).boundCheck(e.getX(), e.getY());
+        for (Metaball mball : mballs) {
+            isHeld = mball.boundCheck(e.getX(), e.getY());
 //            System.out.println("Pressed - X:" + e.getX() + " Y:" + e.getY());
 //            System.out.println(isHeld);
             if (isHeld) {
-                heldBall = mballs.get(i);
+                heldBall = mball;
             }
         }
     }
