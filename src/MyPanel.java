@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -9,6 +7,8 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     Graphics2D g2D;
     ArrayList<Metaball> mballs = new ArrayList<>();
     Metaball heldBall = null;
+
+    boolean distLines = false;
     SpinnerModel radiusValue =
             new SpinnerNumberModel(50, //initial value
                     20, //minimum value
@@ -17,13 +17,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     SpinnerModel strengthValue =
             new SpinnerNumberModel(1000, //initial value
-                    100, //minimum value
+                    0, //minimum value
                     3000, //maximum value
                     100); //step
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
 
     MyPanel() {
-        this.setPreferredSize(new Dimension(500, 500));
+        this.setPreferredSize(new Dimension(700, 700));
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
 
@@ -52,13 +52,17 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         this.add(strengthSpinner);
         this.add(strengthLabel);
 
+        JCheckBox lineCheck = new JCheckBox("Draw Distance Lines");
+        lineCheck.addActionListener(this);
+        this.add(lineCheck);
+
         Metaball mball = new Metaball(100, 100, 25, 1000, Color.BLUE, "BLUE", false);
         mballs.add(mball);
         Metaball mball2 = new Metaball(500, 100, 25, 1000, Color.RED, "RED", false);
         mballs.add(mball2);
         Metaball mball3 = new Metaball(100, 500, 25, 1000, Color.GREEN, "GREEN", false);
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(500, 500, 100, 1000, Color.YELLOW, "YELLOW", false);
+        Metaball mball4 = new Metaball(500, 500, 25, 1000, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
     }
 
@@ -72,7 +76,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         for (Metaball mball : mballs) {
             displayMetaball(mball);
         }
-        drawBallDistance();
+        System.out.println(distLines);
+        if (distLines) {
+            drawBallDistance();
+        }
     }
 
     public void displayMetaball(Metaball m) {
@@ -203,38 +210,46 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         System.out.println(e.getActionCommand());
         String command = e.getActionCommand();
 
-        if (command.equals("+ Metaball")) {
-            Color color = colors[0];
-            for (int i = 0; i <= mballs.size(); i++) {
-                boolean present = false;
-                for (Metaball m : mballs) {
-                    if (m.color == colors[i]) {
-                        present = true;
+        switch (command) {
+            case "+ Metaball" -> {
+                Color color = colors[0];
+                for (int i = 0; i <= mballs.size(); i++) {
+                    boolean present = false;
+                    for (Metaball m : mballs) {
+                        if (m.color == colors[i]) {
+                            present = true;
+                            break;
+                        }
                     }
-                }
-                if (!present) {
-                    color = colors[i];
-                    break;
-                }
+                    if (!present) {
+                        color = colors[i];
+                        break;
+                    }
 
+                }
+                int r = (int) radiusValue.getValue();
+                int s = (int) strengthValue.getValue();
+                Metaball m = new Metaball(100, 100, r, s, color, "GREEN", false);
+                mballs.add(m);
             }
-            int r = (int) radiusValue.getValue();
-            int s = (int) strengthValue.getValue();
-            Metaball m = new Metaball(100, 100, r, s, color, "GREEN", false);
-            mballs.add(m);
-            this.repaint();
-        } else if (command.equals("+ Negative Metaball")) {
-            int r = (int) radiusValue.getValue();
-            int s = (int) strengthValue.getValue();
-            Metaball m = new Metaball(150, 150, r, s, Color.BLACK, "BLACK(-)", true);
-            mballs.add(m);
-            this.repaint();
-        } else if (command.equals("Clear Screen")) {
-            while (mballs.size() != 0) {
-                mballs.remove(mballs.get(0));
+            case "+ Negative Metaball" -> {
+                int r = (int) radiusValue.getValue();
+                int s = (int) strengthValue.getValue();
+                Metaball m = new Metaball(150, 150, r, s, Color.BLACK, "BLACK(-)", true);
+                mballs.add(m);
             }
-            this.repaint();
+            case "Clear Screen" -> {
+                while (mballs.size() != 0) {
+                    mballs.remove(mballs.get(0));
+                }
+            }
+            case "Draw Distance Lines" -> {
+                JCheckBox checkbox = (JCheckBox) e.getSource();
+                distLines = checkbox.isSelected();
+                System.out.println("drawLines?:" + distLines);
+            }
         }
+        this.repaint();
     }
 }
 
