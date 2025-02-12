@@ -23,13 +23,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         addNegBall.addActionListener(this);
         this.add(addNegBall);
 
-        Metaball mball = new Metaball(100, 100, 25, Color.BLUE, "BLUE");
+        Metaball mball = new Metaball(100, 100, 25, Color.BLUE, "BLUE", false);
         mballs.add(mball);
-        Metaball mball2 = new Metaball(500, 100, 25, Color.RED, "RED");
+        Metaball mball2 = new Metaball(500, 100, 25, Color.RED, "RED", false);
         mballs.add(mball2);
-        Metaball mball3 = new Metaball(100, 500, 25, Color.GREEN, "GREEN");
+        Metaball mball3 = new Metaball(100, 500, 25, Color.GREEN, "GREEN", false);
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(500, 500, 25, Color.YELLOW, "YELLOW");
+        Metaball mball4 = new Metaball(500, 500, 100, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
     }
 
@@ -50,8 +50,8 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         g2D.setColor(m.color);
 
         double distort = metaDistortion(m, m.x, m.y);
-        for (double x = m.x - m.falseR; x <= m.x + m.falseR + distort; x++) {
-            for (double y = m.y - m.falseR; y <= m.y + m.falseR + distort; y++) {
+        for (double x = m.x - m.falseR; x <= m.x + m.falseR + Math.abs(distort); x++) {
+            for (double y = m.y - m.falseR; y <= m.y + m.falseR + Math.abs(distort); y++) {
                 distort = metaDistortion(m, x, y);
                 double radius = m.r + distort;
                 double r_sqrd = Math.pow(radius, 2);
@@ -80,7 +80,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 if (mball != altball) {
                     g2D.drawLine((int) mball.x, (int) mball.y, (int) altball.x, (int) altball.y);
                     double dist = Math.sqrt(Math.pow(mball.x - altball.x, 2) + Math.pow(mball.y - altball.y, 2));
-                    System.out.println(mball.name + "->" + altball.name);
+                    System.out.println(mball.name + "<->" + altball.name);
                     System.out.println("distance: " + dist);
                     System.out.println("falloff: " + (100 / dist));
                 }
@@ -91,11 +91,19 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     public double metaDistortion(Metaball m, double x, double y) {
         double distortion = 0;
-
+        if (m.isNegative) {
+            return 0;
+        }
         for (Metaball mball : mballs) {
             if (mball != m) {
-                double dist = Math.sqrt(Math.pow(mball.x - x, 2) + Math.pow(mball.y - y, 2));
-                distortion = distortion + (1000 * (1 / dist));
+
+                if (mball.isNegative) {
+                    double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
+                    distortion = distortion + (2000 * (-1 / dist));
+                } else {
+                    double dist = Math.sqrt(Math.pow(mball.x - x, 2) + Math.pow(mball.y - y, 2));
+                    distortion = distortion + (1000 * (1 / dist));
+                }
             }
         }
         return distortion;
@@ -180,11 +188,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 }
 
             }
-            Metaball m = new Metaball(100, 100, 25, color, "GREEN");
+            Metaball m = new Metaball(100, 100, 25, color, "GREEN", false);
             mballs.add(m);
             this.repaint();
         } else if (command.equals("add Negative Metaball")) {
-
+            Metaball m = new Metaball(150, 150, 25, Color.BLACK, "BLACK(-)", true);
+            mballs.add(m);
+            this.repaint();
         }
     }
 }

@@ -6,10 +6,10 @@ public class Metaball {
     double r;
     double falseR;
     Color color;
-
     String name;
 
-    Metaball(double x, double y, double r, Color color, String name) {
+    boolean isNegative;
+    Metaball(double x, double y, double r, Color color, String name, boolean isNegative) {
 
 
         this.x = x;
@@ -18,6 +18,7 @@ public class Metaball {
         this.falseR = r*4;
         this.color = color;
         this.name = name;
+        this.isNegative = isNegative;
     }
 
     public boolean boundCheck(int x, int y) {
