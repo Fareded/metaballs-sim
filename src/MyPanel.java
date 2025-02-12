@@ -14,6 +14,12 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                     20, //minimum value
                     100, //maximum value
                     5); //step
+
+    SpinnerModel strengthValue =
+            new SpinnerNumberModel(1000, //initial value
+                    100, //minimum value
+                    3000, //maximum value
+                    100); //step
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
 
     MyPanel() {
@@ -28,19 +34,26 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         this.add(addNegBall);
 
         JSpinner radiusSpinner = new JSpinner(radiusValue);
-        radiusSpinner.setMinimumSize(new Dimension(50,50));
-        JLabel radiusLabel = new JLabel("Size");
+        radiusSpinner.setMinimumSize(new Dimension(50, 50));
+        JLabel radiusLabel = new JLabel("Radius");
 
         this.add(radiusSpinner);
         this.add(radiusLabel);
 
-        Metaball mball = new Metaball(100, 100, 25, Color.BLUE, "BLUE", false);
+        JSpinner strengthSpinner = new JSpinner(strengthValue);
+        strengthSpinner.setMinimumSize(new Dimension(50, 50));
+        JLabel strengthLabel = new JLabel("Strength");
+
+        this.add(strengthSpinner);
+        this.add(strengthLabel);
+
+        Metaball mball = new Metaball(100, 100, 25, 1000, Color.BLUE, "BLUE", false);
         mballs.add(mball);
-        Metaball mball2 = new Metaball(500, 100, 25, Color.RED, "RED", false);
+        Metaball mball2 = new Metaball(500, 100, 25, 1000, Color.RED, "RED", false);
         mballs.add(mball2);
-        Metaball mball3 = new Metaball(100, 500, 25, Color.GREEN, "GREEN", false);
+        Metaball mball3 = new Metaball(100, 500, 25, 1000, Color.GREEN, "GREEN", false);
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(500, 500, 100, Color.YELLOW, "YELLOW", false);
+        Metaball mball4 = new Metaball(500, 500, 100, 1000, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
     }
 
@@ -110,10 +123,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
                 if (mball.isNegative) {
                     double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
-                    distortion = distortion + (2000 * (-1 / dist));
+                    distortion = distortion + (mball.strength * (-1 / dist));
                 } else {
                     double dist = Math.sqrt(Math.pow(mball.x - x, 2) + Math.pow(mball.y - y, 2));
-                    distortion = distortion + (1000 * (1 / dist));
+                    distortion = distortion + (mball.strength * (1 / dist));
                 }
             }
         }
@@ -201,12 +214,14 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
             }
             int r = (int) radiusValue.getValue();
-            Metaball m = new Metaball(100, 100, r, color, "GREEN", false);
+            int s = (int) strengthValue.getValue();
+            Metaball m = new Metaball(100, 100, r, s, color, "GREEN", false);
             mballs.add(m);
             this.repaint();
         } else if (command.equals("add Negative Metaball")) {
             int r = (int) radiusValue.getValue();
-            Metaball m = new Metaball(150, 150, r, Color.BLACK, "BLACK(-)", true);
+            int s = (int) strengthValue.getValue();
+            Metaball m = new Metaball(150, 150, r, s, Color.BLACK, "BLACK(-)", true);
             mballs.add(m);
             this.repaint();
         }

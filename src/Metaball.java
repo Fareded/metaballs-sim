@@ -5,16 +5,19 @@ public class Metaball {
     double y;
     double r;
     double falseR;
+
+    int strength;
     Color color;
     String name;
 
     boolean isNegative;
-    Metaball(double x, double y, double r, Color color, String name, boolean isNegative) {
+    Metaball(double x, double y, double r, int strength, Color color, String name, boolean isNegative) {
 
 
         this.x = x;
         this.y = y;
         this.r = r;
+        this.strength = strength;
         this.falseR = r*4;
         this.color = color;
         this.name = name;
