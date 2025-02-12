@@ -1,15 +1,19 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MyPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
     Graphics2D g2D;
     ArrayList<Metaball> mballs = new ArrayList<>();
     Metaball heldBall = null;
-
+    SpinnerModel radiusValue =
+            new SpinnerNumberModel(50, //initial value
+                    20, //minimum value
+                    100, //maximum value
+                    5); //step
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
 
     MyPanel() {
@@ -22,6 +26,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         this.add(addBall);
         addNegBall.addActionListener(this);
         this.add(addNegBall);
+
+        JSpinner radiusSpinner = new JSpinner(radiusValue);
+        radiusSpinner.setMinimumSize(new Dimension(50,50));
+        JLabel radiusLabel = new JLabel("Size");
+
+        this.add(radiusSpinner);
+        this.add(radiusLabel);
 
         Metaball mball = new Metaball(100, 100, 25, Color.BLUE, "BLUE", false);
         mballs.add(mball);
@@ -173,6 +184,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
         String command = e.getActionCommand();
+
         if (command.equals("add Metaball")) {
             Color color = colors[0];
             for (int i = 0; i <= mballs.size(); i++) {
@@ -188,11 +200,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 }
 
             }
-            Metaball m = new Metaball(100, 100, 25, color, "GREEN", false);
+            int r = (int) radiusValue.getValue();
+            Metaball m = new Metaball(100, 100, r, color, "GREEN", false);
             mballs.add(m);
             this.repaint();
         } else if (command.equals("add Negative Metaball")) {
-            Metaball m = new Metaball(150, 150, 25, Color.BLACK, "BLACK(-)", true);
+            int r = (int) radiusValue.getValue();
+            Metaball m = new Metaball(150, 150, r, Color.BLACK, "BLACK(-)", true);
             mballs.add(m);
             this.repaint();
         }
