@@ -10,7 +10,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     boolean distLines = false;
     SpinnerModel radiusValue =
-            new SpinnerNumberModel(50, //initial value
+            new SpinnerNumberModel(25, //initial value
                     20, //minimum value
                     100, //maximum value
                     5); //step
@@ -24,6 +24,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     MyPanel() {
         this.setPreferredSize(new Dimension(700, 700));
+        this.setBackground(Color.WHITE);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
 
@@ -56,13 +57,17 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         lineCheck.addActionListener(this);
         this.add(lineCheck);
 
+        JButton sameColor = new JButton("Same Color");
+        sameColor.addActionListener(this);
+        this.add(sameColor);
+
         Metaball mball = new Metaball(100, 100, 25, 1000, Color.BLUE, "BLUE", false);
         mballs.add(mball);
-        Metaball mball2 = new Metaball(500, 100, 25, 1000, Color.RED, "RED", false);
+        Metaball mball2 = new Metaball(200, 100, 25, 1000, Color.RED, "RED", false);
         mballs.add(mball2);
-        Metaball mball3 = new Metaball(100, 500, 25, 1000, Color.GREEN, "GREEN", false);
+        Metaball mball3 = new Metaball(100, 200, 25, 1000, Color.GREEN, "GREEN", false);
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(500, 500, 25, 1000, Color.YELLOW, "YELLOW", false);
+        Metaball mball4 = new Metaball(200, 200, 25, 1000, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
     }
 
@@ -76,7 +81,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         for (Metaball mball : mballs) {
             displayMetaball(mball);
         }
-        System.out.println(distLines);
+//        System.out.println(distLines);
         if (distLines) {
             drawBallDistance();
         }
@@ -84,11 +89,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     public void displayMetaball(Metaball m) {
         g2D.setColor(m.color);
-
-        double distort = metaDistortion(m, m.x, m.y);
+        double distort = (double) metaDistortion(m, m.x, m.y).get(0);
         for (double x = m.x - m.falseR; x <= m.x + m.falseR + Math.abs(distort); x++) {
             for (double y = m.y - m.falseR; y <= m.y + m.falseR + Math.abs(distort); y++) {
-                distort = metaDistortion(m, x, y);
+                ArrayList distortionValues = metaDistortion(m, x, y);
+                distort = (double) distortionValues.get(0);
+                Color color = (Color) distortionValues.get(1);
+                g2D.setColor(color);
                 double radius = m.r + distort;
                 double r_sqrd = Math.pow(radius, 2);
                 double d_sqrd = Math.pow(x - m.x, 2) + Math.pow(y - m.y, 2);
@@ -97,7 +104,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 }
             }
         }
-        System.out.println("ball drawn");
+//        System.out.println("ball drawn");
     }
 
     public void updateBallPos(int x, int y) {
@@ -125,24 +132,40 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         }
     }
 
-    public double metaDistortion(Metaball m, double x, double y) {
+    public ArrayList metaDistortion(Metaball m, double x, double y) {
         double distortion = 0;
-        if (m.isNegative) {
-            return 0;
-        }
-        for (Metaball mball : mballs) {
-            if (mball != m) {
+        ArrayList values = new ArrayList<>();
+        Color gradient = m.color;
 
-                if (mball.isNegative) {
+        if (!m.isNegative) {
+            for (Metaball mball : mballs) {
+                if (mball != m) {
+
                     double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
-                    distortion = distortion + (mball.strength * (-1 / dist));
-                } else {
-                    double dist = Math.sqrt(Math.pow(mball.x - x, 2) + Math.pow(mball.y - y, 2));
-                    distortion = distortion + (mball.strength * (1 / dist));
+                    if (mball.isNegative) {
+                        distortion = distortion + (mball.r * 50 * (-1 / dist));
+                    } else {
+                        distortion = distortion + (mball.r * 50 * (1 / dist));
+
+                        double p = (dist / 100);
+                        if (p <= 0.5) {
+                            p = 0.5;
+                        }
+                        if (p < 1) {
+                            double R = m.color.getRed() * p + mball.color.getRed() * (1 - p);
+                            double G = m.color.getGreen() * p + mball.color.getGreen() * (1 - p);
+                            double B = m.color.getBlue() * p + mball.color.getBlue() * (1 - p);
+
+                            gradient = new Color((int) R, (int) G, (int) B);
+                        }
+                    }
                 }
             }
         }
-        return distortion;
+
+        values.add(distortion);
+        values.add(gradient);
+        return values;
     }
 
     @Override
@@ -247,6 +270,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 JCheckBox checkbox = (JCheckBox) e.getSource();
                 distLines = checkbox.isSelected();
                 System.out.println("drawLines?:" + distLines);
+            }
+            case "Same Color" -> {
+                for (Metaball m:mballs) {
+                    m.color = Color.RED;
+                }
             }
         }
         this.repaint();
