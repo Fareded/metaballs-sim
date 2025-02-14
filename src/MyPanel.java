@@ -63,11 +63,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
         Metaball mball = new Metaball(100, 100, 25, 1000, Color.BLUE, "BLUE", false);
         mballs.add(mball);
-        Metaball mball2 = new Metaball(200, 100, 25, 1000, Color.RED, "RED", false);
+        Metaball mball2 = new Metaball(300, 100, 25, 1000, Color.RED, "RED", false);
         mballs.add(mball2);
-        Metaball mball3 = new Metaball(100, 200, 25, 1000, Color.GREEN, "GREEN", false);
+        Metaball mball3 = new Metaball(100, 300, 25, 1000, Color.GREEN, "GREEN", false);
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(200, 200, 25, 1000, Color.YELLOW, "YELLOW", false);
+        Metaball mball4 = new Metaball(300, 300, 25, 1000, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
     }
 
@@ -89,9 +89,9 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     public void displayMetaball(Metaball m) {
         g2D.setColor(m.color);
-        double distort = (double) metaDistortion(m, m.x, m.y).get(0);
-        for (double x = m.x - m.falseR; x <= m.x + m.falseR + Math.abs(distort); x++) {
-            for (double y = m.y - m.falseR; y <= m.y + m.falseR + Math.abs(distort); y++) {
+        double distort = 0;
+        for (double x = m.x - m.falseR; x <= m.x + m.falseR; x++) {
+            for (double y = m.y - m.falseR; y <= m.y + m.falseR; y++) {
                 ArrayList distortionValues = metaDistortion(m, x, y);
                 distort = (double) distortionValues.get(0);
                 Color color = (Color) distortionValues.get(1);
@@ -105,6 +105,45 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
             }
         }
 //        System.out.println("ball drawn");
+    }
+
+    public ArrayList metaDistortion(Metaball m, double x, double y) {
+        double distortion = 0;
+        ArrayList values = new ArrayList<>();
+        Color gradient = m.color;
+        double R = gradient.getRed();
+        double G = gradient.getGreen();
+        double B = gradient.getBlue();
+
+        if (!m.isNegative) {
+            for (Metaball mball : mballs) {
+                if (mball != m) {
+
+                    double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
+                    if (mball.isNegative) {
+                        distortion = distortion + (mball.r * 50 * (-1 / dist));
+                    } else {
+                        distortion = distortion + (mball.r * 50 * (1 / dist));
+
+                        double p = (dist / 100);
+//                        if (p <= 0.4) {
+//                            p = 0.4;
+//                        }
+
+                        if (p < 1) {
+                            R = R * p + mball.color.getRed() * (1 - p);
+                            G = G * p + mball.color.getGreen() * (1 - p);
+                            B = B * p + mball.color.getBlue() * (1 - p);
+                        }
+                    }
+                }
+            }
+//            System.out.println(R + " " + G + " " + B);
+            gradient = new Color((int) R, (int) G, (int) B);
+        }
+        values.add(distortion);
+        values.add(gradient);
+        return values;
     }
 
     public void updateBallPos(int x, int y) {
@@ -130,42 +169,6 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
             }
             exclusion++;
         }
-    }
-
-    public ArrayList metaDistortion(Metaball m, double x, double y) {
-        double distortion = 0;
-        ArrayList values = new ArrayList<>();
-        Color gradient = m.color;
-
-        if (!m.isNegative) {
-            for (Metaball mball : mballs) {
-                if (mball != m) {
-
-                    double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
-                    if (mball.isNegative) {
-                        distortion = distortion + (mball.r * 50 * (-1 / dist));
-                    } else {
-                        distortion = distortion + (mball.r * 50 * (1 / dist));
-
-                        double p = (dist / 100);
-                        if (p <= 0.5) {
-                            p = 0.5;
-                        }
-                        if (p < 1) {
-                            double R = m.color.getRed() * p + mball.color.getRed() * (1 - p);
-                            double G = m.color.getGreen() * p + mball.color.getGreen() * (1 - p);
-                            double B = m.color.getBlue() * p + mball.color.getBlue() * (1 - p);
-
-                            gradient = new Color((int) R, (int) G, (int) B);
-                        }
-                    }
-                }
-            }
-        }
-
-        values.add(distortion);
-        values.add(gradient);
-        return values;
     }
 
     @Override
@@ -261,18 +264,14 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 Metaball m = new Metaball(150, 150, r, s, Color.BLACK, "BLACK(-)", true);
                 mballs.add(m);
             }
-            case "Clear Screen" -> {
-                while (mballs.size() != 0) {
-                    mballs.remove(mballs.get(0));
-                }
-            }
+            case "Clear Screen" -> mballs.clear();
             case "Draw Distance Lines" -> {
                 JCheckBox checkbox = (JCheckBox) e.getSource();
                 distLines = checkbox.isSelected();
                 System.out.println("drawLines?:" + distLines);
             }
             case "Same Color" -> {
-                for (Metaball m:mballs) {
+                for (Metaball m : mballs) {
                     m.color = Color.RED;
                 }
             }
