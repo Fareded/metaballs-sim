@@ -18,7 +18,7 @@ public class Metaball {
         this.y = y;
         this.r = r;
         this.strength = strength;
-        this.falseR = r*(r/5);
+        this.falseR = r*(r/4);
         this.color = color;
         this.name = name;
         this.isNegative = isNegative;

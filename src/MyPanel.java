@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class MyPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
     Graphics2D g2D;
@@ -21,12 +24,27 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                     50, //maximum value
                     5); //step
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
+    Map<String, Color> colorBoxValues = new HashMap<>();
+
+    JComboBox colorBox;
 
     MyPanel() {
         this.setPreferredSize(new Dimension(700, 700));
         this.setBackground(Color.WHITE);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
+
+        colorBoxValues.put("Auto", Color.WHITE);
+        colorBoxValues.put("Blue", Color.BLUE);
+        colorBoxValues.put("Red", Color.RED);
+        colorBoxValues.put("Green", Color.GREEN);
+        colorBoxValues.put("Yellow", Color.YELLOW);
+        colorBoxValues.put("Magenta", Color.MAGENTA);
+        colorBoxValues.put("Orange", Color.ORANGE);
+        colorBoxValues.put("Pink", Color.PINK);
+        colorBox = new JComboBox(colorBoxValues.keySet().toArray(new String[0]));
+
+        this.add(colorBox);
 
         JButton addBall = new JButton("+ Metaball");
         JButton addNegBall = new JButton("+ Negative Metaball");
@@ -193,8 +211,9 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         Metaball m = checkAllBounds(e.getX(), e.getY());
 
         if (m != null) {
-            this.setToolTipText("<html> Position: " + (int) m.x + "," + (int) m.y +
-                    " <br> Base Radius: " + m.r + "<br> " +
+            this.setToolTipText("<html>" + m.name + "<br> " +
+                    "Position: " + (int) m.x + "," + (int) m.y + "<br>" +
+                    " Base Radius: " + m.r + "<br> " +
                     "Strength: " + m.strength + " </html>");
         } else {
             this.setToolTipText(null);
@@ -254,24 +273,33 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
         switch (command) {
             case "+ Metaball" -> {
+                String colorName = (String) colorBox.getSelectedItem();
                 Color color = colors[0];
-                for (int i = 0; i <= mballs.size(); i++) {
-                    boolean present = false;
-                    for (Metaball m : mballs) {
-                        if (m.color == colors[i]) {
-                            present = true;
-                            break;
+                if (Objects.equals(colorName, "Auto")) {
+                    for (Map.Entry<String, Color> c : colorBoxValues.entrySet()) {
+                        if (c.getValue() != Color.WHITE) {
+                            boolean present = false;
+                            for (Metaball m : mballs) {
+                                if (m.color == c.getValue()) {
+                                    present = true;
+                                    break;
+                                }
+                            }
+                            if (!present) {
+                                color = c.getValue();
+                                colorName = c.getKey();
+                                break;
+                            }
                         }
                     }
-                    if (!present) {
-                        color = colors[i];
-                        break;
-                    }
-
+                } else {
+                    color = colorBoxValues.get(colorName);
                 }
                 int r = (int) radiusValue.getValue();
                 int s = (int) strengthValue.getValue();
-                Metaball m = new Metaball(100, 100, r, s, color, "GREEN", false);
+
+                System.out.println(colorName);
+                Metaball m = new Metaball(100, 100, r, s, color, colorName, false);
                 mballs.add(m);
             }
             case "+ Negative Metaball" -> {
