@@ -11,15 +11,15 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     boolean distLines = false;
     SpinnerModel radiusValue =
             new SpinnerNumberModel(25, //initial value
-                    20, //minimum value
-                    100, //maximum value
+                    5, //minimum value
+                    50, //maximum value
                     5); //step
 
     SpinnerModel strengthValue =
-            new SpinnerNumberModel(1000, //initial value
+            new SpinnerNumberModel(50, //initial value
                     0, //minimum value
-                    3000, //maximum value
-                    100); //step
+                    50, //maximum value
+                    5); //step
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
 
     MyPanel() {
@@ -61,13 +61,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         sameColor.addActionListener(this);
         this.add(sameColor);
 
-        Metaball mball = new Metaball(100, 100, 25, 1000, Color.BLUE, "BLUE", false);
+        Metaball mball = new Metaball(100, 100, 25, 50, Color.BLUE, "BLUE", false);
         mballs.add(mball);
-        Metaball mball2 = new Metaball(300, 100, 25, 1000, Color.RED, "RED", false);
+        Metaball mball2 = new Metaball(300, 100, 25, 50, Color.RED, "RED", false);
         mballs.add(mball2);
-        Metaball mball3 = new Metaball(100, 300, 25, 1000, Color.GREEN, "GREEN", false);
+        Metaball mball3 = new Metaball(100, 300, 25, 50, Color.GREEN, "GREEN", false);
         mballs.add(mball3);
-        Metaball mball4 = new Metaball(300, 300, 25, 1000, Color.YELLOW, "YELLOW", false);
+        Metaball mball4 = new Metaball(300, 300, 25, 50, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
     }
 
@@ -92,20 +92,20 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         double distort = 0;
         for (double x = m.x - m.falseR; x <= m.x + m.falseR; x++) {
             for (double y = m.y - m.falseR; y <= m.y + m.falseR; y++) {
+                double distance = Math.sqrt(Math.pow(x - m.x, 2) + Math.pow(y - m.y, 2));
                 ArrayList distortionValues = metaDistortion(m, x, y);
                 distort = (double) distortionValues.get(0);
                 Color color = (Color) distortionValues.get(1);
                 g2D.setColor(color);
-                double radius = m.r + distort;
-                double r_sqrd = Math.pow(radius, 2);
-                double d_sqrd = Math.pow(x - m.x, 2) + Math.pow(y - m.y, 2);
-                if (d_sqrd < r_sqrd) {
+
+                if (distance < m.r + distort) {
                     g2D.fillRect((int) x, (int) y, 1, 1);
                 }
             }
+
         }
-//        System.out.println("ball drawn");
     }
+
 
     public ArrayList metaDistortion(Metaball m, double x, double y) {
         double distortion = 0;
@@ -123,11 +123,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                     if (mball.isNegative) {
                         distortion = distortion + (mball.r * 50 * (-1 / dist));
                     } else {
-                        distortion = distortion + (mball.r * 50 * (1 / dist));
+                        distortion = distortion + (mball.r * mball.strength * (1 / dist));
 
                         double p = (dist / 100);
-//                        if (p <= 0.4) {
-//                            p = 0.4;
+//                        if (p <= 0.1) {
+//                            p = 0.1;
 //                        }
 
                         if (p < 1) {
@@ -171,6 +171,15 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         }
     }
 
+    public Metaball checkAllBounds(int x, int y) {
+        for (Metaball m : mballs) {
+            if (m.boundCheck(x, y)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void mouseDragged(MouseEvent e) {
         if (heldBall != null) {
@@ -181,8 +190,15 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     @Override
     public void mouseMoved(MouseEvent e) {
-//        System.out.println("Moved");
-//        System.out.println("X:" + e.getX() + " Y:" + e.getY());
+        Metaball m = checkAllBounds(e.getX(), e.getY());
+
+        if (m != null) {
+            this.setToolTipText("<html> Position: " + (int) m.x + "," + (int) m.y +
+                    " <br> Base Radius: " + m.r + "<br> " +
+                    "Strength: " + m.strength + " </html>");
+        } else {
+            this.setToolTipText(null);
+        }
     }
 
     @Override
@@ -272,7 +288,9 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
             }
             case "Same Color" -> {
                 for (Metaball m : mballs) {
-                    m.color = Color.RED;
+                    if (!m.isNegative) {
+                        m.color = Color.RED;
+                    }
                 }
             }
         }
