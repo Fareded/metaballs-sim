@@ -205,7 +205,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     public void mergeBalls() {
         for (Metaball m : mballs) {
-            if (m != heldBall) {
+            if (m != heldBall && !m.isNegative) {
                 double d = Math.sqrt(Math.pow(m.x - heldBall.x, 2) + Math.pow(m.y - heldBall.y, 2));
                 if (d < 10) {
                     Color c = mergeColor(heldBall.color, m.color, 0.5);
@@ -237,7 +237,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     public void mouseDragged(MouseEvent e) {
         if (heldBall != null) {
             updateBallPos(e.getX(), e.getY());
-            if (mergeBalls) {
+            if (mergeBalls && !heldBall.isNegative) {
                 mergeBalls();
             }
             this.repaint();
