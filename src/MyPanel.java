@@ -12,6 +12,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     Metaball heldBall = null;
 
     boolean distLines = false;
+    boolean mergeBalls = false;
     SpinnerModel radiusValue =
             new SpinnerNumberModel(25, //initial value
                     5, //minimum value
@@ -74,6 +75,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         JCheckBox lineCheck = new JCheckBox("Draw Distance Lines");
         lineCheck.addActionListener(this);
         this.add(lineCheck);
+
+        JCheckBox mergeCheck = new JCheckBox("Merge Balls");
+        mergeCheck.addActionListener(this);
+        this.add(mergeCheck);
 
         JButton sameColor = new JButton("Same Color");
         sameColor.addActionListener(this);
@@ -198,10 +203,43 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         return null;
     }
 
+    public void mergeBalls() {
+        for (Metaball m : mballs) {
+            if (m != heldBall) {
+                double d = Math.sqrt(Math.pow(m.x - heldBall.x, 2) + Math.pow(m.y - heldBall.y, 2));
+                if (d < 10) {
+                    Color c = mergeColor(heldBall.color, m.color, 0.5);
+                    double size = (heldBall.r + m.r) * 0.75;
+                    if (size > 100) {
+                        size = 100;
+                    }
+                    Metaball merged = new Metaball(heldBall.x, heldBall.y, size, heldBall.strength, c, "Merged", false);
+                    mballs.remove(m);
+                    mballs.remove(heldBall);
+                    mballs.add(merged);
+                    heldBall = merged;
+                    this.repaint();
+                    break;
+                }
+            }
+        }
+    }
+
+    public Color mergeColor(Color x, Color y, double p) {
+        double R = x.getRed() * p + y.getRed() * (1 - p);
+        double G = x.getGreen() * p + y.getGreen() * (1 - p);
+        double B = x.getBlue() * p + y.getBlue() * (1 - p);
+
+        return new Color((int) R, (int) G, (int) B);
+    }
+
     @Override
     public void mouseDragged(MouseEvent e) {
         if (heldBall != null) {
             updateBallPos(e.getX(), e.getY());
+            if (mergeBalls) {
+                mergeBalls();
+            }
             this.repaint();
         }
     }
@@ -273,6 +311,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
         switch (command) {
             case "+ Metaball" -> {
+                if (mballs.size() >= colorBoxValues.size()-1) {
+                    System.out.println("Maximum balls on screen");
+                    break;
+                }
                 String colorName = (String) colorBox.getSelectedItem();
                 Color color = colors[0];
                 if (Objects.equals(colorName, "Auto")) {
@@ -313,6 +355,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 JCheckBox checkbox = (JCheckBox) e.getSource();
                 distLines = checkbox.isSelected();
                 System.out.println("drawLines?:" + distLines);
+            }
+            case "Merge Balls" -> {
+                JCheckBox checkbox = (JCheckBox) e.getSource();
+                mergeBalls = checkbox.isSelected();
             }
             case "Same Color" -> {
                 for (Metaball m : mballs) {
