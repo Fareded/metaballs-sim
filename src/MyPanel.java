@@ -24,6 +24,12 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                     0, //minimum value
                     50, //maximum value
                     5); //step
+
+    SpinnerModel tempValue =
+            new SpinnerNumberModel(1, //initial value
+                    0, //minimum value
+                    50, //maximum value
+                    1); //step
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
     Map<String, Color> colorBoxValues = new HashMap<>();
 
@@ -46,6 +52,12 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         colorBox = new JComboBox(colorBoxValues.keySet().toArray(new String[0]));
 
         this.add(colorBox);
+
+//        JSpinner tempSpinner = new JSpinner(tempValue);
+//        tempSpinner.setMinimumSize(new Dimension(50, 50));
+//        JLabel tempLabel = new JLabel("Temp");
+//        this.add(tempSpinner);
+//        this.add(tempLabel);
 
         JButton addBall = new JButton("+ Metaball");
         JButton addNegBall = new JButton("+ Negative Metaball");
@@ -113,6 +125,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     public void displayMetaball(Metaball m) {
         g2D.setColor(m.color);
         double distort = 0;
+
         for (double x = m.x - m.falseR; x <= m.x + m.falseR; x++) {
             for (double y = m.y - m.falseR; y <= m.y + m.falseR; y++) {
                 double distance = Math.sqrt(Math.pow(x - m.x, 2) + Math.pow(y - m.y, 2));
@@ -120,12 +133,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 distort = (double) distortionValues.get(0);
                 Color color = (Color) distortionValues.get(1);
                 g2D.setColor(color);
-
-                if (distance < m.r + distort) {
+                if (distance < m.r + distort && distance < m.falseR) {
                     g2D.fillRect((int) x, (int) y, 1, 1);
                 }
             }
-
         }
     }
 
@@ -148,10 +159,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                     } else {
                         distortion = distortion + (mball.r * mball.strength * (1 / dist));
 
-                        double p = (dist / 100);
-//                        if (p <= 0.1) {
-//                            p = 0.1;
-//                        }
+                        double p = (dist / 150);
+                        if (p <= 0.5) {
+                            p = 0.5;
+                        }
 
                         if (p < 1) {
                             R = R * p + mball.color.getRed() * (1 - p);
@@ -311,7 +322,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
         switch (command) {
             case "+ Metaball" -> {
-                if (mballs.size() >= colorBoxValues.size()-1) {
+                if (mballs.size() >= colorBoxValues.size() - 1) {
                     System.out.println("Maximum balls on screen");
                     break;
                 }
