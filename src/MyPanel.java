@@ -33,7 +33,9 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     Color[] colors = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.ORANGE, Color.PINK};
     Map<String, Color> colorBoxValues = new HashMap<>();
 
+
     JComboBox colorBox;
+    JComboBox mixingType;
 
     MyPanel() {
         this.setPreferredSize(new Dimension(700, 700));
@@ -49,6 +51,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         colorBoxValues.put("Magenta", Color.MAGENTA);
         colorBoxValues.put("Orange", Color.ORANGE);
         colorBoxValues.put("Pink", Color.PINK);
+        colorBoxValues.put("Cyan", Color.CYAN);
         colorBox = new JComboBox(colorBoxValues.keySet().toArray(new String[0]));
 
         this.add(colorBox);
@@ -96,6 +99,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         sameColor.addActionListener(this);
         this.add(sameColor);
 
+        String[] mtypes = {"ADD", "SUB", "AVG"};
+        mixingType = new JComboBox(mtypes);
+
+        this.add(mixingType);
+
         Metaball mball = new Metaball(100, 100, 25, 50, Color.BLUE, "BLUE", false);
         mballs.add(mball);
         Metaball mball2 = new Metaball(300, 100, 25, 50, Color.RED, "RED", false);
@@ -126,6 +134,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         g2D.setColor(m.color);
         double distort = 0;
 
+
         for (double x = m.x - m.falseR; x <= m.x + m.falseR; x++) {
             for (double y = m.y - m.falseR; y <= m.y + m.falseR; y++) {
                 double distance = Math.sqrt(Math.pow(x - m.x, 2) + Math.pow(y - m.y, 2));
@@ -145,34 +154,70 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         double distortion = 0;
         ArrayList values = new ArrayList<>();
         Color gradient = m.color;
-        double R = gradient.getRed();
-        double G = gradient.getGreen();
-        double B = gradient.getBlue();
+        double R = 225;
+        double G = 225;
+        double B = 225;
+        String mixType = (String) mixingType.getSelectedItem();
 
         if (!m.isNegative) {
             for (Metaball mball : mballs) {
-                if (mball != m) {
+                double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
 
-                    double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
+                if (mball != m) {
                     if (mball.isNegative) {
                         distortion = distortion + (mball.r * 50 * (-1 / dist));
                     } else {
-                        distortion = distortion + (mball.r * mball.strength * (1 / dist));
 
-                        double p = (dist / 150);
+                        distortion = distortion + (mball.r * mball.strength * (1 / dist));
+                    }
+                }
+
+                double p = (dist / 150);
+
+                p = Math.max(p, 0.5);
+                p = Math.min(p, 1);
+                switch (mixType) {
+                    case "ADD":
+                        if (p < 1) {
+                            R = (R * p) + mball.color.getRed() * (1 - p);
+                            G = (G * p) + mball.color.getGreen() * (1 - p);
+                            B = (B * p) + mball.color.getBlue() * (1 - p);
+                        }
+                        break;
+                    case "SUB":
+                        if (p < 1) {
+                            double C = m.C * p;
+                            double M = m.M * p;
+                            double Y = m.Y * p;
+
+                            double altC = mball.C * (1 - p);
+                            double altM = mball.M * (1 - p);
+                            double altY = mball.Y * (1 - p);
+
+                            R = (C * altC) * 255;
+                            G = (M * altM) * 255;
+                            B = (Y * altY) * 255;
+                        }
+                        break;
+                    case "AVG":
+                        p = (dist / 150);
                         if (p <= 0.5) {
                             p = 0.5;
                         }
-
                         if (p < 1) {
-                            R = R * p + mball.color.getRed() * (1 - p);
-                            G = G * p + mball.color.getGreen() * (1 - p);
-                            B = B * p + mball.color.getBlue() * (1 - p);
+                            R = (R * p + mball.color.getRed() * (1 - p)) / 2;
+                            G = (G * p + mball.color.getGreen() * (1 - p)) / 2;
+                            B = (B * p + mball.color.getBlue() * (1 - p)) / 2;
                         }
-                    }
+                        break;
                 }
+
             }
 //            System.out.println(R + " " + G + " " + B);
+
+            R = R < 0 ? 0 : R;
+            B = B < 0 ? 0 : B;
+            G = G < 0 ? 0 : G;
             gradient = new Color((int) R, (int) G, (int) B);
         }
         values.add(distortion);
