@@ -158,22 +158,23 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         double R = 0;
         double G = 0;
         double B = 0;
+        int c = mballs.size();
 
         switch (mixType) {
             case "ADD":
-                R = 0;
-                G = 0;
-                B = 0;
+                R = 127.5 ;
+                G = 127.5 ;
+                B = 127.5 ;
                 break;
             case "SUB":
-                R = 0;
-                G = 0;
-                B = 0;
+                R = 127.5 ;
+                G = 127.5 ;
+                B = 127.5 ;
                 break;
             case "AVG":
-                R = 255*0.5;
-                G = 255*0.5;
-                B = 255*0.5;
+                R = 255 * 0.5;
+                G = 255 * 0.5;
+                B = 255 * 0.5;
                 break;
         }
 
@@ -189,54 +190,40 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                         distortion = distortion + (mball.r * mball.strength * (1 / dist));
                     }
                 }
+                if (!mball.isNegative) {
+                    double p = (dist / 150);
 
-                double p = (dist / 150);
-
-                p = Math.max(p, 0.75);
-                p = Math.min(p, 1);
-                switch (mixType) {
-                    case "ADD":
-                        if (p < 1) {
-                            R = (R * p) + mball.color.getRed() * (1 - p);
-                            G = (G * p) + mball.color.getGreen() * (1 - p);
-                            B = (B * p) + mball.color.getBlue() * (1 - p);
-                        }
-                        break;
-                    case "SUB":
-                        if (p < 1) {
-//                            double C = m.C * p;
-//                            double M = m.M * p;
-//                            double Y = m.Y * p;
-//
-//                            double altC = mball.C * (1 - p);
-//                            double altM = mball.M * (1 - p);
-//                            double altY = mball.Y * (1 - p);
-//
-//                            R = (C * altC) * 255;
-//                            G = (M * altM) * 255;
-//                            B = (Y * altY) * 255;
-                            if (mball == m) {
+                    p = Math.max(p, 0.75);
+                    p = Math.min(p, 1);
+                    switch (mixType) {
+                        case "ADD":
+                            if (p < 1) {
                                 R = (R * p) + mball.color.getRed() * (1 - p);
                                 G = (G * p) + mball.color.getGreen() * (1 - p);
                                 B = (B * p) + mball.color.getBlue() * (1 - p);
-                            } else {
-                                R = (R * p) - mball.color.getRed() * (1 - p);
-                                G = (G * p) - mball.color.getGreen() * (1 - p);
-                                B = (B * p) - mball.color.getBlue() * (1 - p);
                             }
-                        }
-                        break;
-                    case "AVG":
-                        p = (dist / 150);
-                        if (p <= 0.5) {
-                            p = 0.5;
-                        }
-                        if (p < 1) {
-                            R = (R * p + mball.color.getRed() * (1 - p)) / 2;
-                            G = (G * p + mball.color.getGreen() * (1 - p)) / 2;
-                            B = (B * p + mball.color.getBlue() * (1 - p)) / 2;
-                        }
-                        break;
+                            break;
+                        case "SUB":
+                            if (p < 1) {
+//
+                                    R = (R * p) - mball.color.getRed() * (1 - p);
+                                    G = (G * p) - mball.color.getGreen() * (1 - p);
+                                    B = (B * p) - mball.color.getBlue() * (1 - p);
+//
+                            }
+                            break;
+                        case "AVG":
+                            p = (dist / 150);
+                            if (p <= 0.5) {
+                                p = 0.5;
+                            }
+                            if (p < 1) {
+                                R = (R * p + mball.color.getRed() * (1 - p)) / 2;
+                                G = (G * p + mball.color.getGreen() * (1 - p)) / 2;
+                                B = (B * p + mball.color.getBlue() * (1 - p)) / 2;
+                            }
+                            break;
+                    }
                 }
 
             }
@@ -394,7 +381,13 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
         switch (command) {
             case "+ Metaball" -> {
-                if (mballs.size() >= colorBoxValues.size() - 1) {
+                int count = mballs.size();
+                for (Metaball m : mballs) {
+                    if (m.isNegative){
+                        count--;
+                    }
+                }
+                if (count >= colorBoxValues.size() - 1) {
                     System.out.println("Maximum balls on screen");
                     break;
                 }
