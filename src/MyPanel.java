@@ -154,27 +154,27 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         double distortion = 0;
         ArrayList values = new ArrayList<>();
         Color gradient = m.color;
-        String mixType = (String) mixingType.getSelectedItem();
+        String mixMode = (String) mixingType.getSelectedItem();
         double R = 0;
         double G = 0;
         double B = 0;
         int c = mballs.size();
 
-        switch (mixType) {
+        switch (mixMode) {
             case "ADD":
-                R = 127.5 ;
-                G = 127.5 ;
-                B = 127.5 ;
+                R = 127.5;
+                G = 127.5;
+                B = 127.5;
                 break;
             case "SUB":
-                R = 127.5 ;
-                G = 127.5 ;
-                B = 127.5 ;
+                R = 255;
+                G = 255;
+                B = 255;
                 break;
             case "AVG":
-                R = 255 * 0.5;
-                G = 255 * 0.5;
-                B = 255 * 0.5;
+                R = 255;
+                G = 255;
+                B = 255;
                 break;
         }
 
@@ -192,10 +192,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                 }
                 if (!mball.isNegative) {
                     double p = (dist / 150);
-
-                    p = Math.max(p, 0.75);
-                    p = Math.min(p, 1);
-                    switch (mixType) {
+                    if (mixMode != "AVG") {
+                        p = Math.max(p, 0.5);
+                        p = Math.min(p, 1);
+                    }
+                    switch (mixMode) {
                         case "ADD":
                             if (p < 1) {
                                 R = (R * p) + mball.color.getRed() * (1 - p);
@@ -206,21 +207,17 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                         case "SUB":
                             if (p < 1) {
 //
-                                    R = (R * p) - mball.color.getRed() * (1 - p);
-                                    G = (G * p) - mball.color.getGreen() * (1 - p);
-                                    B = (B * p) - mball.color.getBlue() * (1 - p);
+                                R = (R * p) - mball.color.getRed() * (1 - p);
+                                G = (G * p) - mball.color.getGreen() * (1 - p);
+                                B = (B * p) - mball.color.getBlue() * (1 - p);
 //
                             }
                             break;
                         case "AVG":
-                            p = (dist / 150);
-                            if (p <= 0.5) {
-                                p = 0.5;
-                            }
                             if (p < 1) {
-                                R = (R * p + mball.color.getRed() * (1 - p)) / 2;
-                                G = (G * p + mball.color.getGreen() * (1 - p)) / 2;
-                                B = (B * p + mball.color.getBlue() * (1 - p)) / 2;
+                                R += mball.color.getRed() * (1 - p);
+                                G += mball.color.getGreen() * (1 - p);
+                                B += mball.color.getBlue() * (1 - p);
                             }
                             break;
                     }
@@ -228,6 +225,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
             }
 //            System.out.println(R + " " + G + " " + B);
+            if (mixMode == "AVG") {
+                R /= mballs.size();
+                G /= mballs.size();
+                B /= mballs.size();
+            }
 
             R = R < 0 ? 0 : R;
             B = B < 0 ? 0 : B;
@@ -383,7 +385,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
             case "+ Metaball" -> {
                 int count = mballs.size();
                 for (Metaball m : mballs) {
-                    if (m.isNegative){
+                    if (m.isNegative) {
                         count--;
                     }
                 }
