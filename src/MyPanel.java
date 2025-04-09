@@ -154,10 +154,28 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         double distortion = 0;
         ArrayList values = new ArrayList<>();
         Color gradient = m.color;
-        double R = 225;
-        double G = 225;
-        double B = 225;
         String mixType = (String) mixingType.getSelectedItem();
+        double R = 0;
+        double G = 0;
+        double B = 0;
+
+        switch (mixType) {
+            case "ADD":
+                R = 0;
+                G = 0;
+                B = 0;
+                break;
+            case "SUB":
+                R = 0;
+                G = 0;
+                B = 0;
+                break;
+            case "AVG":
+                R = 255*0.5;
+                G = 255*0.5;
+                B = 255*0.5;
+                break;
+        }
 
         if (!m.isNegative) {
             for (Metaball mball : mballs) {
@@ -174,7 +192,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
                 double p = (dist / 150);
 
-                p = Math.max(p, 0.5);
+                p = Math.max(p, 0.75);
                 p = Math.min(p, 1);
                 switch (mixType) {
                     case "ADD":
@@ -186,17 +204,26 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                         break;
                     case "SUB":
                         if (p < 1) {
-                            double C = m.C * p;
-                            double M = m.M * p;
-                            double Y = m.Y * p;
-
-                            double altC = mball.C * (1 - p);
-                            double altM = mball.M * (1 - p);
-                            double altY = mball.Y * (1 - p);
-
-                            R = (C * altC) * 255;
-                            G = (M * altM) * 255;
-                            B = (Y * altY) * 255;
+//                            double C = m.C * p;
+//                            double M = m.M * p;
+//                            double Y = m.Y * p;
+//
+//                            double altC = mball.C * (1 - p);
+//                            double altM = mball.M * (1 - p);
+//                            double altY = mball.Y * (1 - p);
+//
+//                            R = (C * altC) * 255;
+//                            G = (M * altM) * 255;
+//                            B = (Y * altY) * 255;
+                            if (mball == m) {
+                                R = (R * p) + mball.color.getRed() * (1 - p);
+                                G = (G * p) + mball.color.getGreen() * (1 - p);
+                                B = (B * p) + mball.color.getBlue() * (1 - p);
+                            } else {
+                                R = (R * p) - mball.color.getRed() * (1 - p);
+                                G = (G * p) - mball.color.getGreen() * (1 - p);
+                                B = (B * p) - mball.color.getBlue() * (1 - p);
+                            }
                         }
                         break;
                     case "AVG":
