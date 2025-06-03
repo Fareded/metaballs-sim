@@ -37,7 +37,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     JComboBox colorBox;
     JComboBox mixingType;
-
+    JPanel p = new JPanel();
     JCheckBox physicsCheck = new JCheckBox("Physics");
 
     MyPanel() {
@@ -45,6 +45,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         this.setBackground(Color.WHITE);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
+
+
+        p.setBackground(Color.lightGray);
+        p.setLayout(new FlowLayout());
 
         colorBoxValues.put("Auto", Color.WHITE);
         colorBoxValues.put("Blue", Color.BLUE);
@@ -57,7 +61,7 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         colorBoxValues.put("Cyan", Color.CYAN);
         colorBox = new JComboBox(colorBoxValues.keySet().toArray(new String[0]));
 
-        this.add(colorBox);
+        p.add(colorBox);
 
 //        JSpinner tempSpinner = new JSpinner(tempValue);
 //        tempSpinner.setMinimumSize(new Dimension(50, 50));
@@ -65,51 +69,52 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 //        this.add(tempSpinner);
 //        this.add(tempLabel);
 
+
         JButton addBall = new JButton("+ Metaball");
         JButton addNegBall = new JButton("+ Negative Metaball");
         addBall.addActionListener(this);
-        this.add(addBall);
+        p.add(addBall);
         addNegBall.addActionListener(this);
-        this.add(addNegBall);
+        p.add(addNegBall);
 
         JButton clearScreen = new JButton("Clear Screen");
         clearScreen.addActionListener(this);
-        this.add(clearScreen);
+        p.add(clearScreen);
 
         JSpinner radiusSpinner = new JSpinner(radiusValue);
         radiusSpinner.setMinimumSize(new Dimension(50, 50));
         JLabel radiusLabel = new JLabel("Radius");
 
-        this.add(radiusSpinner);
-        this.add(radiusLabel);
+        p.add(radiusSpinner);
+        p.add(radiusLabel);
 
         JSpinner strengthSpinner = new JSpinner(strengthValue);
         strengthSpinner.setMinimumSize(new Dimension(50, 50));
         JLabel strengthLabel = new JLabel("Strength");
 
-        this.add(strengthSpinner);
-        this.add(strengthLabel);
+        p.add(strengthSpinner);
+        p.add(strengthLabel);
 
         JCheckBox lineCheck = new JCheckBox("Draw Distance Lines");
         lineCheck.addActionListener(this);
-        this.add(lineCheck);
+        p.add(lineCheck);
 
 
         physicsCheck.addActionListener(this);
-        this.add(physicsCheck);
+        p.add(physicsCheck);
 
         JCheckBox mergeCheck = new JCheckBox("Merge Balls");
         mergeCheck.addActionListener(this);
-        this.add(mergeCheck);
+        p.add(mergeCheck);
 
         JButton sameColor = new JButton("Same Color");
         sameColor.addActionListener(this);
-        this.add(sameColor);
+        p.add(sameColor);
 
         String[] mtypes = {"ADD", "SUB", "AVG"};
         mixingType = new JComboBox(mtypes);
 
-        this.add(mixingType);
+        p.add(mixingType);
 
         Metaball mball = new Metaball(100, 100, 25, 50, Color.BLUE, "BLUE", false);
         mballs.add(mball);
@@ -120,6 +125,12 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         Metaball mball4 = new Metaball(300, 300, 25, 50, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
 
+        this.add(p);
+
+        JCheckBox hideOptions = new JCheckBox("Hide");
+        hideOptions.addActionListener(this);
+        hideOptions.se
+        this.add(hideOptions);
 
     }
 
@@ -148,22 +159,25 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     }
 
     public void ballPhysics(Metaball m) {
-        m.y += m.vVel;
-        m.x += m.hVel;
+        Dimension window = this.getSize();
+
+        m.y = Math.max(Math.min(m.y + m.vVel, window.height), 0);
+        m.x = Math.max(Math.min(m.x + m.hVel, window.width), 0);
+        ;
         m.vVel += 0.1;
-        Dimension size = this.getSize();
-        if (m.x >= size.width || m.x <= 0) {
+
+        if (m.x >= window.width || m.x <= 0) {
             m.hVel = -m.hVel;
         }
-        if (m.y >= size.height || m.y <= 0) {
+        if (m.y >= window.height || m.y <= 0) {
             m.vVel = -m.vVel;
             double f = Math.random() / Math.nextDown(1.0);
-            double rand = -1.5 * (1.0 - f) + 1.5 * f;
+            double rand = -5 * (1.0 - f) + 5 * f;
             m.hVel += rand;
         }
 
-        double energyLoss = 0.2;
-        double maxVelocity = 5;
+        double energyLoss = 0.5;
+        double maxVelocity = 10;
 
         if (m.hVel > maxVelocity) {
             m.hVel -= energyLoss;
@@ -514,6 +528,9 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                         m.color = Color.RED;
                     }
                 }
+            }
+            case "Hide" -> {
+                p.setVisible(!p.isVisible());
             }
         }
         this.repaint();
