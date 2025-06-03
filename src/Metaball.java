@@ -13,6 +13,9 @@ public class Metaball {
     double Y;
     String name;
 
+    double vVel;
+    double hVel;
+
     boolean isNegative;
 
     Metaball(double x, double y, double r, int strength, Color color, String name, boolean isNegative) {
@@ -27,6 +30,9 @@ public class Metaball {
         this.color = color;
         this.name = name;
         this.isNegative = isNegative;
+
+        vVel = 0;
+        hVel = 0;
 
         C = 1 - (color.getRed() / 255);
         M = 1 - (color.getGreen() / 255);

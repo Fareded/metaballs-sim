@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+
 public class MyPanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
     Graphics2D g2D;
     ArrayList<Metaball> mballs = new ArrayList<>();
@@ -36,6 +37,8 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 
     JComboBox colorBox;
     JComboBox mixingType;
+
+    JCheckBox physicsCheck = new JCheckBox("Physics");
 
     MyPanel() {
         this.setPreferredSize(new Dimension(700, 700));
@@ -91,6 +94,10 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         lineCheck.addActionListener(this);
         this.add(lineCheck);
 
+
+        physicsCheck.addActionListener(this);
+        this.add(physicsCheck);
+
         JCheckBox mergeCheck = new JCheckBox("Merge Balls");
         mergeCheck.addActionListener(this);
         this.add(mergeCheck);
@@ -112,6 +119,8 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         mballs.add(mball3);
         Metaball mball4 = new Metaball(300, 300, 25, 50, Color.YELLOW, "YELLOW", false);
         mballs.add(mball4);
+
+
     }
 
     public void paint(Graphics g) {
@@ -122,17 +131,58 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     public void renderALl() {
         super.paint(g2D); //clear screen before each redraw
         for (Metaball mball : mballs) {
+            if (heldBall != mball && physicsCheck.isSelected()) {
+                ballPhysics(mball);
+            }
             displayMetaball(mball);
         }
 //        System.out.println(distLines);
         if (distLines) {
             drawBallDistance();
         }
+        System.out.println("redrawn!");
+
+        if (physicsCheck.isSelected()) {
+            repaint();
+        }
+    }
+
+    public void ballPhysics(Metaball m) {
+        m.y += m.vVel;
+        m.x += m.hVel;
+        m.vVel += 0.1;
+        Dimension size = this.getSize();
+        if (m.x >= size.width || m.x <= 0) {
+            m.hVel = -m.hVel;
+        }
+        if (m.y >= size.height || m.y <= 0) {
+            m.vVel = -m.vVel;
+            double f = Math.random() / Math.nextDown(1.0);
+            double rand = -1.5 * (1.0 - f) + 1.5 * f;
+            m.hVel += rand;
+        }
+
+        double energyLoss = 0.2;
+        double maxVelocity = 5;
+
+        if (m.hVel > maxVelocity) {
+            m.hVel -= energyLoss;
+        }
+        if (m.hVel < -maxVelocity) {
+            m.hVel += energyLoss;
+        }
+        if (m.vVel > maxVelocity) {
+            m.vVel -= energyLoss;
+        }
+        if (m.vVel < -maxVelocity) {
+            m.vVel += energyLoss;
+        }
+
     }
 
     public void displayMetaball(Metaball m) {
         g2D.setColor(m.color);
-        double distort = 0;
+        double distort;
 
 
         for (double x = m.x - m.falseR; x <= m.x + m.falseR; x++) {
@@ -158,13 +208,18 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         double R = 0;
         double G = 0;
         double B = 0;
-        int c = mballs.size();
 
         switch (mixMode) {
             case "ADD":
                 R = 127.5;
                 G = 127.5;
                 B = 127.5;
+//                R = 0;
+//                G = 0;
+//                B = 0;
+//                R = 255;
+//                G = 255;
+//                B = 255;
                 break;
             case "SUB":
                 R = 255;
@@ -179,30 +234,34 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
         }
 
         if (!m.isNegative) {
-            for (Metaball mball : mballs) {
+//            for (int i = mballs.size() - 1; i >= 0; i--) {
+            for (int i = 0; i < mballs.size(); i++) {
+                Metaball mball = mballs.get(i);
+
                 double dist = Math.sqrt(Math.pow((mball.x - x), 2) + Math.pow((mball.y - y), 2));
 
                 if (mball != m) {
                     if (mball.isNegative) {
-                        distortion = distortion + (mball.r * 50 * (-1 / dist));
+                        distortion += (mball.r * mball.strength * (-0.5 / dist));
                     } else {
-
-                        distortion = distortion + (mball.r * mball.strength * (1 / dist));
+                        distortion += (mball.r * mball.strength * (0.5 / dist));
                     }
                 }
                 if (!mball.isNegative) {
-                    double p = (dist / 150);
-                    if (mixMode != "AVG") {
+                    double p = (dist / (2 * m.strength));
+                    if (!mixMode.equals("AVG")) {
                         p = Math.max(p, 0.5);
                         p = Math.min(p, 1);
                     }
                     switch (mixMode) {
                         case "ADD":
-                            if (p < 1) {
-                                R = (R * p) + mball.color.getRed() * (1 - p);
-                                G = (G * p) + mball.color.getGreen() * (1 - p);
-                                B = (B * p) + mball.color.getBlue() * (1 - p);
-                            }
+                            R = (R * p) + (mball.color.getRed() * (1 - p));
+                            G = (G * p) + (mball.color.getGreen() * (1 - p));
+                            B = (B * p) + (mball.color.getBlue() * (1 - p));
+
+//                            R = (R * (1 - p)) - (mball.color.getRed() * p);
+//                            G = (G * (1 - p)) - (mball.color.getGreen() * p);
+//                            B = (B * (1 - p)) - (mball.color.getBlue() * p);
                             break;
                         case "SUB":
                             if (p < 1) {
@@ -214,18 +273,18 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
                             }
                             break;
                         case "AVG":
-                            if (p < 1) {
-                                R += mball.color.getRed() * (1 - p);
-                                G += mball.color.getGreen() * (1 - p);
-                                B += mball.color.getBlue() * (1 - p);
-                            }
+                            R = ((R * p) + mball.color.getRed() * (1 - p));
+                            G = ((G * p) + mball.color.getGreen() * (1 - p));
+                            B = ((B * p) + mball.color.getBlue() * (1 - p));
+
                             break;
                     }
                 }
 
             }
+
 //            System.out.println(R + " " + G + " " + B);
-            if (mixMode == "AVG") {
+            if (mixMode.equals("AVG")) {
                 R /= mballs.size();
                 G /= mballs.size();
                 B /= mballs.size();
@@ -234,6 +293,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
             R = R < 0 ? 0 : R;
             B = B < 0 ? 0 : B;
             G = G < 0 ? 0 : G;
+
+            R = Math.min(R, 255);
+            G = Math.min(G, 255);
+            B = Math.min(B, 255);
+
             gradient = new Color((int) R, (int) G, (int) B);
         }
         values.add(distortion);
@@ -308,7 +372,11 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
     @Override
     public void mouseDragged(MouseEvent e) {
         if (heldBall != null) {
-            updateBallPos(e.getX(), e.getY());
+            int nX = e.getX();
+            int nY = e.getY();
+            heldBall.hVel = nX - heldBall.x;
+            heldBall.vVel = nY - heldBall.y;
+            updateBallPos(nX, nY);
             if (mergeBalls && !heldBall.isNegative) {
                 mergeBalls();
             }
@@ -357,6 +425,8 @@ public class MyPanel extends JPanel implements MouseListener, MouseMotionListene
 //            System.out.println(isHeld);
             if (isHeld) {
                 heldBall = mball;
+                heldBall.vVel = 0;
+                heldBall.hVel = 0;
             }
         }
     }
